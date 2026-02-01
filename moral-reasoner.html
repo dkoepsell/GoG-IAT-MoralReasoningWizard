@@ -1,0 +1,2543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Moral Reasoner | GoG + IAT Wizard</title>
+  <style>
+    :root{
+      --bg: #0b0f14;
+      --panel: #111824;
+      --panel2: #0f1620;
+      --text: #e8eef7;
+      --muted: #a7b4c7;
+      --border: rgba(255,255,255,0.10);
+      --accent: #7dd3fc;
+      --accent2:#a78bfa;
+      --good:#34d399;
+      --warn:#fbbf24;
+      --bad:#fb7185;
+      --shadow: 0 10px 30px rgba(0,0,0,0.35);
+      --radius: 14px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: var(--sans);
+      color: var(--text);
+      background:
+        radial-gradient(1100px 500px at 15% 10%, rgba(125,211,252,0.14), transparent 60%),
+        radial-gradient(900px 500px at 80% 0%, rgba(167,139,250,0.14), transparent 55%),
+        radial-gradient(900px 700px at 60% 110%, rgba(52,211,153,0.08), transparent 55%),
+        var(--bg);
+    }
+    a{ color: var(--accent); text-decoration:none; }
+    .app{
+      height:100%;
+      display:grid;
+      grid-template-rows: auto 1fr auto;
+    }
+    header{
+      padding:18px 18px 10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width: 240px;
+    }
+    .logo{
+      width:38px; height:38px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(125,211,252,0.95), rgba(167,139,250,0.95));
+      box-shadow: var(--shadow);
+    }
+    .title{
+      display:flex;
+      flex-direction:column;
+      line-height:1.15;
+    }
+    .title strong{ font-size: 14px; letter-spacing:0.2px; }
+    .title span{ font-size:12px; color: var(--muted); }
+    .top-actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    button, .btn{
+      border:1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      padding:10px 12px;
+      border-radius: 12px;
+      cursor:pointer;
+      font-weight:600;
+      letter-spacing:0.2px;
+      transition: transform 0.06s ease, background 0.15s ease, border-color 0.15s ease;
+      user-select:none;
+    }
+    button:hover, .btn:hover{
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(255,255,255,0.18);
+    }
+    button:active, .btn:active{ transform: translateY(1px); }
+    .btn-primary{
+      background: linear-gradient(135deg, rgba(125,211,252,0.18), rgba(167,139,250,0.18));
+      border-color: rgba(125,211,252,0.35);
+    }
+    .btn-danger{
+      border-color: rgba(251,113,133,0.35);
+      background: rgba(251,113,133,0.08);
+    }
+    .btn-ghost{
+      background: transparent;
+    }
+
+    .main{
+      padding: 8px 18px 18px;
+      display:grid;
+      grid-template-columns: 260px 1fr 420px;
+      gap:14px;
+      height: calc(100vh - 120px); /* header + footer */
+      min-height:0;
+    }
+
+    .panel{
+      background: rgba(17,24,36,0.78);
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      min-height:0;
+    }
+    .panel .hd{
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .panel .hd h3{
+      margin:0;
+      font-size: 13px;
+      letter-spacing:0.35px;
+      text-transform:uppercase;
+      color: rgba(232,238,247,0.92);
+    }
+    .panel .bd{
+      padding: 14px;
+      overflow:auto; /* key */
+      min-height:0;
+    }
+
+    .left, .center, .right{
+      display:flex;
+      flex-direction:column;
+      min-height:0;
+    }
+
+    .right{
+      resize: horizontal;
+      overflow: auto;
+      min-width: 280px;
+      max-width: 520px;
+    }
+
+    /* Stepper */
+    .stepper{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .step{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 10px;
+      border-radius: 12px;
+      border:1px solid transparent;
+      cursor:pointer;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+    .step:hover{
+      background: rgba(255,255,255,0.04);
+      border-color: rgba(255,255,255,0.08);
+    }
+    .step.active{
+      background: linear-gradient(135deg, rgba(125,211,252,0.12), rgba(167,139,250,0.12));
+      border-color: rgba(125,211,252,0.25);
+    }
+    .dot{
+      width:18px; height:18px;
+      border-radius: 50%;
+      border:1px solid rgba(255,255,255,0.18);
+      display:grid;
+      place-items:center;
+      font-size:11px;
+      color: rgba(232,238,247,0.9);
+      flex:0 0 auto;
+      background: rgba(255,255,255,0.02);
+    }
+    .dot.done{
+      border-color: rgba(52,211,153,0.35);
+      background: rgba(52,211,153,0.10);
+      color: var(--good);
+    }
+    .step .meta{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      min-width:0;
+    }
+    .step .meta strong{
+      font-size: 13px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .step .meta span{
+      font-size: 12px;
+      color: var(--muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    /* Forms */
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+    .grid-1{ grid-template-columns: 1fr; }
+    label{
+      display:block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom:6px;
+    }
+    input, select, textarea{
+      width:100%;
+      padding:10px 10px;
+      border-radius: 12px;
+      border:1px solid rgba(255,255,255,0.12);
+      background: rgba(0,0,0,0.25);
+      color: var(--text);
+      outline:none;
+      font-family: var(--sans);
+    }
+    textarea{ min-height: 92px; resize: vertical; }
+    input:focus, select:focus, textarea:focus{
+      border-color: rgba(125,211,252,0.35);
+      box-shadow: 0 0 0 4px rgba(125,211,252,0.10);
+    }
+    .row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .muted{ color: var(--muted); }
+
+    /* Cards */
+    .cards{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .card{
+      border:1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.02);
+      border-radius: 14px;
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .card .top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    /* Duty slider */
+    .duty-slider{
+      display:flex;
+      gap:16px;
+      overflow-x:auto;
+      overflow-y:hidden;
+      scroll-snap-type:x mandatory;
+      padding-bottom: 12px;
+    }
+    .duty-card{
+      min-width: min(720px, 92vw);
+      max-width: min(720px, 92vw);
+      scroll-snap-align:start;
+      overflow-y:auto;
+      max-height: calc(100vh - 240px);
+    }
+
+    details{
+      border:1px solid rgba(255,255,255,0.08);
+      background: rgba(0,0,0,0.18);
+      border-radius: 12px;
+      padding:10px;
+    }
+    details > summary{
+      cursor:pointer;
+      list-style:none;
+      font-size:12px;
+      color: var(--muted);
+      user-select:none;
+    }
+    details > summary::-webkit-details-marker{ display:none; }
+
+    .pill{
+      font-size: 11px;
+      padding:4px 8px;
+      border-radius: 999px;
+      border:1px solid rgba(255,255,255,0.12);
+      color: rgba(232,238,247,0.85);
+      background: rgba(255,255,255,0.02);
+    }
+    .pill.good{ border-color: rgba(52,211,153,0.35); background: rgba(52,211,153,0.10); color: var(--good); }
+    .pill.warn{ border-color: rgba(251,191,36,0.35); background: rgba(251,191,36,0.10); color: var(--warn); }
+    .pill.bad{ border-color: rgba(251,113,133,0.35); background: rgba(251,113,133,0.10); color: var(--bad); }
+
+    .h4{ margin:0; font-size: 14px; }
+    .small{ font-size: 12px; color: var(--muted); }
+    .mono{ font-family: var(--mono); }
+
+    .split{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    .divider{
+      height:1px;
+      background: rgba(255,255,255,0.10);
+      margin: 10px 0;
+    }
+
+    /* Toggle */
+    .toggle{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:10px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.02);
+    }
+    .toggle input[type="checkbox"]{
+      width: 18px; height: 18px;
+      accent-color: #7dd3fc;
+      cursor:pointer;
+    }
+    .toggle .tmeta{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      min-width:0;
+    }
+    .toggle .tmeta strong{ font-size: 13px; }
+    .toggle .tmeta span{ font-size: 12px; color: var(--muted); }
+
+    /* Right panel: tabs + blocks */
+    .tabs{
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+    .tab{
+      padding:7px 10px;
+      border-radius: 999px;
+      border:1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.02);
+      cursor:pointer;
+      font-size:12px;
+      color: rgba(232,238,247,0.9);
+      user-select:none;
+    }
+    .tab.active{
+      border-color: rgba(125,211,252,0.35);
+      background: rgba(125,211,252,0.10);
+    }
+    .trace{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .trace-item{
+      border:1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.18);
+      border-radius: 14px;
+      padding:10px;
+    }
+    .trace-item .k{
+      font-size: 11px;
+      color: rgba(232,238,247,0.75);
+      text-transform: uppercase;
+      letter-spacing: 0.35px;
+      margin-bottom: 6px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .trace-item pre{
+      margin:0;
+      font-family: var(--mono);
+      font-size: 11.5px;
+      color: rgba(232,238,247,0.92);
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.35;
+    }
+
+    .alert{
+      border:1px solid rgba(255,255,255,0.10);
+      border-left: 4px solid rgba(251,191,36,0.7);
+      background: rgba(251,191,36,0.10);
+      border-radius: 14px;
+      padding:10px;
+    }
+    .alert.bad{
+      border-left-color: rgba(251,113,133,0.8);
+      background: rgba(251,113,133,0.10);
+    }
+    .alert.good{
+      border-left-color: rgba(52,211,153,0.8);
+      background: rgba(52,211,153,0.10);
+    }
+    .alert strong{
+      display:block;
+      font-size:12px;
+      letter-spacing:0.2px;
+      margin-bottom:4px;
+      color: rgba(232,238,247,0.95);
+    }
+    .alert span{
+      font-size:12px;
+      color: rgba(232,238,247,0.85);
+    }
+
+    footer{
+      padding: 10px 18px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .kbd{
+      font-family: var(--mono);
+      border:1px solid rgba(255,255,255,0.12);
+      padding:2px 6px;
+      border-radius: 8px;
+      background: rgba(0,0,0,0.20);
+      color: rgba(232,238,247,0.85);
+    }
+
+    /* JSON modal */
+    #jsonModal{
+      position:fixed;
+      inset:0;
+      background: rgba(0,0,0,0.65);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:9999;
+    }
+    #jsonModal .box{
+      background: #0f1620;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 14px;
+      width: min(980px, 94vw);
+      max-height: 90vh;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      box-shadow: var(--shadow);
+    }
+    #jsonModal .box .mhd{
+      padding:14px;
+      border-bottom:1px solid rgba(255,255,255,0.10);
+      display:flex;
+      align-items:baseline;
+      justify-content:space-between;
+      gap:10px;
+    }
+    #jsonModal .box .mbd{
+      padding:14px;
+      flex:1;
+      overflow:auto;
+    }
+    #jsonModal textarea{
+      width:100%;
+      height:340px;
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+    #jsonModal .box .mft{
+      padding:14px;
+      border-top:1px solid rgba(255,255,255,0.10);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    @media (max-width: 1100px){
+      .main{ grid-template-columns: 260px 1fr; }
+      .right{ display:none; }
+    }
+    @media (max-width: 820px){
+      .main{ grid-template-columns: 1fr; }
+      .left{ order: 1; }
+      .center{ order: 2; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div class="title">
+          <strong>Moral Reasoner</strong>
+          <span>GoG + IAT wizard • duty routing • BFO hygiene • JSON round-trip</span>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <button class="btn btn-ghost" id="btnLoadSample" title="Load sample scenario">Load Sample</button>
+        <button class="btn" id="btnLoadJSON" title="Paste JSON to import">Load JSON</button>
+        <button class="btn" id="btnCopyJSON" title="Copy JSON to clipboard">Copy JSON</button>
+        <button class="btn btn-primary" id="btnDownloadJSON" title="Download JSON export">Download JSON</button>
+        <button class="btn btn-danger" id="btnReset" title="Reset everything">Reset</button>
+      </div>
+    </header>
+
+    <div class="main">
+      <!-- LEFT: STEPPER -->
+      <section class="panel left">
+        <div class="hd">
+          <h3>Wizard</h3>
+          <span class="small" id="stepHint">Click a step</span>
+        </div>
+        <div class="bd">
+          <div class="stepper" id="stepper"></div>
+          <div class="divider"></div>
+          <div class="small">
+            Shortcuts:
+            <span class="kbd">Ctrl</span> + <span class="kbd">S</span> download JSON ·
+            <span class="kbd">Ctrl</span> + <span class="kbd">K</span> copy JSON ·
+            <span class="kbd">Ctrl</span> + <span class="kbd">O</span> load JSON
+          </div>
+        </div>
+      </section>
+
+      <!-- CENTER: MAIN CONTENT -->
+      <section class="panel center">
+        <div class="hd">
+          <h3 id="centerTitle">Step</h3>
+          <div class="row">
+            <button class="btn" id="btnPrev">Back</button>
+            <button class="btn btn-primary" id="btnNext">Next</button>
+          </div>
+        </div>
+        <div class="bd" id="centerBody"></div>
+      </section>
+
+      <!-- RIGHT: TRACE + WARNINGS -->
+      <section class="panel right">
+        <div class="hd">
+          <h3 id="rightTitle">Diagnostics</h3>
+          <div class="tabs">
+            <div class="tab active" id="tabWarnings">Warnings</div>
+            <div class="tab" id="tabTrace">Trace</div>
+            <button class="btn btn-ghost" id="btnToggleRaw" title="Toggle raw JSON in trace">Toggle Raw</button>
+          </div>
+        </div>
+        <div class="bd">
+          <div id="warningsPane"></div>
+          <div class="trace" id="tracePane" style="display:none;"></div>
+        </div>
+      </section>
+    </div>
+
+    <footer>
+      <div>
+        IAT classifies agency. GoG charges relations via directedness + vulnerability. Duties route to loci where residue and repair terminate.
+      </div>
+      <div class="mono small" id="statusLine">Ready</div>
+    </footer>
+  </div>
+
+  <!-- JSON LOAD MODAL -->
+  <div id="jsonModal">
+    <div class="box">
+      <div class="mhd">
+        <div>
+          <div class="h4">Load Moral Reasoner JSON</div>
+          <div class="small">Paste a previously exported case JSON below. Loader validates shape and recomputes classifications and routing.</div>
+        </div>
+        <button class="btn btn-ghost" id="btnCloseJSON">Close</button>
+      </div>
+      <div class="mbd">
+        <textarea id="jsonInput" class="mono" placeholder="{ ... }"></textarea>
+      </div>
+      <div class="mft">
+        <span class="small muted" id="jsonLoadStatus"></span>
+        <div class="row" style="justify-content:flex-end;">
+          <button class="btn btn-ghost" id="btnCancelJSON">Cancel</button>
+          <button class="btn btn-primary" id="btnConfirmJSON">Load</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* =========================================================
+   Moral Reasoner Wizard (single-file drop-in)
+   Includes:
+   - Full 8-step wizard
+   - Duty slider + collapsible duty cards
+   - JSON import/export
+   - BFO typing (minimal) + category warnings
+   - Structural gaps/contradictions warnings
+   ========================================================= */
+
+(() => {
+  // ---------- Utilities ----------
+  const uid = (prefix) => `${prefix}_${Math.random().toString(16).slice(2,10)}${Date.now().toString(16).slice(-4)}`;
+  const $ = (sel, el=document) => el.querySelector(sel);
+  const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
+  const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+  const nowISO = () => new Date().toISOString();
+
+  const STATUS = (msg) => { $("#statusLine").textContent = msg; };
+
+  function safeJSON(obj){ return JSON.stringify(obj, null, 2); }
+
+  async function copyToClipboard(text){
+    try{
+      await navigator.clipboard.writeText(text);
+      STATUS("Copied JSON to clipboard");
+    }catch(e){
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      STATUS("Copied JSON to clipboard (fallback)");
+    }
+  }
+
+  function downloadText(filename, text){
+    const blob = new Blob([text], { type: "application/json;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 0);
+    STATUS(`Downloaded ${filename}`);
+  }
+
+  function escapeHTML(s){
+    return String(s)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  // ---------- Minimal BFO typing (optional hygiene) ----------
+  const BFO = {
+    IC: "independent_continuant",
+    SDC: "specifically_dependent_continuant",
+    GDC: "generically_dependent_continuant",
+    OCC: "occurrent"
+  };
+
+  function inferBFOType(entity){
+    // Minimal defaults: keep it conservative
+    const t = (entity?.type || "").toLowerCase();
+    if(["human","institution","animal","ai_system","artifact","ecosystem","other"].includes(t)) return BFO.IC;
+    return BFO.IC;
+  }
+
+  // ---------- App State ----------
+  const state = {
+    ui: {
+      stepIndex: 0,
+      showRawTrace: false,
+      rightMode: "warnings"
+    },
+    data: {
+      case: {
+        id: "case_001",
+        title: "",
+        domain: "moral",
+        description: "",
+        time_horizon: "single_event",
+        created_at: nowISO()
+      },
+      entities: [],
+      relations: [],
+      iat: {},
+      duties: [],
+      events: [],
+      residue: [],
+      repair_plans: []
+    }
+  };
+
+  // ---------- Steps ----------
+  const steps = [
+    { key: "case", label: "Case Setup", sub: "Domain profile and scenario" },
+    { key: "entities", label: "Entities", sub: "Define parties and systems" },
+    { key: "iat", label: "IAT Agency", sub: "Standing, breach, residue, repair, control" },
+    { key: "relations", label: "Relations", sub: "Directedness, vulnerability, roles" },
+    { key: "duties", label: "Duties", sub: "Infer and edit duty sets" },
+    { key: "events", label: "Breach and Residue", sub: "Events, residue ledger" },
+    { key: "repair", label: "Repair Planner", sub: "Plans to clear residue" },
+    { key: "export", label: "Export", sub: "JSON and summary report" },
+  ];
+
+  // ---------- Rules ----------
+  // IAT classifier:
+  // NormativeAgent(E) if all five pass:
+  // standing && breach && non_resettable_residue && repair_capacity && counterfactual_control
+  // else:
+  // if standing and breach-like exist but residue/repair terminate elsewhere: NormativeInstrument
+  function computeIATClassification(iatRecord){
+    if(!iatRecord) return "unassessed";
+    const passAll =
+      iatRecord.standing?.pass &&
+      iatRecord.breach?.pass &&
+      iatRecord.non_resettable_residue?.pass &&
+      iatRecord.repair_capacity?.pass &&
+      iatRecord.counterfactual_control?.pass;
+
+    if(passAll) return "normative_agent";
+
+    const standing = !!iatRecord.standing?.pass;
+    const breach = !!iatRecord.breach?.pass;
+
+    if(standing && breach) return "normative_instrument";
+    return "proto_or_none";
+  }
+
+  // GoG duty trigger:
+  // If directedness(A,B) && vulnerability(B relative to A) => Obligation(A->B)
+  function relationCharged(rel){
+    return !!rel?.directedness?.present && !!rel?.vulnerability?.present;
+  }
+
+  function entityLabel(id){
+    return state.data.entities.find(e => e.id === id)?.label || id;
+  }
+
+  // Duty routing when "A is not an IAT agent"
+  function getDutyBearers(fromEntityId){
+    const iatRec = state.data.iat[fromEntityId];
+    const cls = computeIATClassification(iatRec);
+    if(cls === "normative_agent") return [fromEntityId];
+
+    // Try explicit residue loci, else governance.controllers
+    const e = state.data.entities.find(x => x.id === fromEntityId);
+    const locusIds = (iatRec && Array.isArray(iatRec.residue_locus_ids) && iatRec.residue_locus_ids.length)
+      ? iatRec.residue_locus_ids
+      : (e?.governance?.controllers?.length ? e.governance.controllers : []);
+
+    return locusIds.length ? locusIds : [fromEntityId];
+  }
+
+  // ---------- Diagnostics (gaps + contradictions + BFO hygiene) ----------
+  function computeDiagnostics(){
+    const d = state.data;
+    const diags = [];
+
+    // Ensure entities have bfo_type
+    d.entities.forEach(e => {
+      if(!e.bfo_type) e.bfo_type = inferBFOType(e);
+    });
+
+    // Gap A: charged relation with no duties
+    d.relations.forEach(r => {
+      if(!relationCharged(r)) return;
+      const hasDuty = d.duties.some(dd => dd.from === r.from && dd.to === r.to);
+      if(!hasDuty){
+        diags.push({
+          level: "warn",
+          title: "Charged relation with no duties",
+          msg: `${entityLabel(r.from)} → ${entityLabel(r.to)} is marked directed + vulnerable, but no duties are articulated.`
+        });
+      }
+    });
+
+    // Gap B: breach event with no residue anywhere (basic)
+    d.events.forEach(ev => {
+      if(ev.type !== "breach") return;
+      const hasResidue = d.residue.some(s => s.entity === ev.actor);
+      if(!hasResidue){
+        diags.push({
+          level: "warn",
+          title: "Breach without residue",
+          msg: `Event ${ev.id} is a breach by ${entityLabel(ev.actor)} but no residue is recorded on that actor.`
+        });
+      }
+    });
+
+    // Gap C: enduring residue with no repair plan reference
+    d.residue.forEach(s => {
+      if(!s.enduring) return;
+      const referenced = d.repair_plans.some(rp => rp.for_residue === s.id) ||
+        (Array.isArray(s.clearing_conditions) && s.clearing_conditions.length > 0);
+      if(!referenced){
+        diags.push({
+          level: "warn",
+          title: "Enduring residue without repair path",
+          msg: `Residue ${s.id} is enduring but no repair plan references it.`
+        });
+      }
+    });
+
+    // Contradiction: duties assigned to non-bearers (BFO hygiene)
+    d.duties.forEach(dd => {
+      const bearers = dd.bearers || [];
+      bearers.forEach(bid => {
+        const ent = d.entities.find(e => e.id === bid);
+        if(!ent) return;
+        if(ent.bfo_type === BFO.SDC || ent.bfo_type === BFO.OCC){
+          diags.push({
+            level: "bad",
+            title: "Category error in duty bearer",
+            msg: `Duty ${dd.id} assigns bearer ${entityLabel(bid)} typed ${ent.bfo_type}. Duties require a continuant bearer (typically independent continuant).`
+          });
+        }
+      });
+    });
+
+    // Contradiction: charged relation but recognition duty explicitly denied
+    d.relations.forEach(r => {
+      if(!relationCharged(r)) return;
+      const recDuty = d.duties.find(x => x.from===r.from && x.to===r.to && x.family==="recognition");
+      if(recDuty && (recDuty.status === "denied" || recDuty.status === "expired")){
+        diags.push({
+          level: "bad",
+          title: "Recognition denied in a live relation",
+          msg: `${entityLabel(r.from)} → ${entityLabel(r.to)} is charged, but recognition is marked ${recDuty.status}.`
+        });
+      }
+    });
+
+    // Agency contradiction: user assigns duties to an entity classified as instrument w/out routing
+    d.duties.forEach(dd => {
+      const cls = computeIATClassification(d.iat[dd.from]);
+      if(cls === "normative_instrument"){
+        const bearers = dd.bearers || [];
+        if(bearers.includes(dd.from)){
+          diags.push({
+            level: "warn",
+            title: "Duty assigned to non-agent origin",
+            msg: `${entityLabel(dd.from)} is classified as normative_instrument, but duty ${dd.id} bearer includes itself see routing.`
+          });
+        }
+      }
+    });
+
+    if(diags.length === 0){
+      diags.push({
+        level: "good",
+        title: "No structural issues detected",
+        msg: "Given current inputs, no gaps or contradictions were flagged."
+      });
+    }
+
+    return diags;
+  }
+
+  function renderDiagnostics(){
+    const pane = $("#warningsPane");
+    const diags = computeDiagnostics();
+    pane.innerHTML = "";
+    diags.forEach(dg => {
+      const cls = dg.level === "bad" ? "alert bad" : (dg.level === "good" ? "alert good" : "alert");
+      const el = document.createElement("div");
+      el.className = cls;
+      el.innerHTML = `<strong>${escapeHTML(dg.title)}</strong><span>${escapeHTML(dg.msg)}</span>`;
+      pane.appendChild(el);
+    });
+  }
+
+  // ---------- Trace ----------
+  function renderTrace(){
+    const traceEl = $("#tracePane");
+    traceEl.innerHTML = "";
+
+    const d = state.data;
+
+    const items = [];
+
+    items.push({
+      title: "Case",
+      body: state.ui.showRawTrace ? safeJSON(d.case) : [
+        `title: ${d.case.title || "(untitled)"}`,
+        `domain: ${d.case.domain}`,
+        `time_horizon: ${d.case.time_horizon}`,
+      ].join("\n")
+    });
+
+    items.push({
+      title: "Entities",
+      body: state.ui.showRawTrace ? safeJSON(d.entities) : (d.entities.length
+        ? d.entities.map(e => `- ${e.label || e.id} (${e.type}, ${e.bfo_type || inferBFOType(e)}) [${e.id}]`).join("\n")
+        : "No entities yet.")
+    });
+
+    const iatLines = d.entities.map(e => {
+      const rec = d.iat[e.id];
+      const cls = computeIATClassification(rec);
+      return `- ${e.label || e.id}: ${cls}`;
+    });
+    items.push({
+      title: "IAT summary",
+      body: state.ui.showRawTrace ? safeJSON(d.iat) : (iatLines.length ? iatLines.join("\n") : "No entities.")
+    });
+
+    const relLines = d.relations.map(r => {
+      const a = entityLabel(r.from);
+      const b = entityLabel(r.to);
+      const ch = relationCharged(r) ? "charged" : "neutral";
+      return `- ${a} -> ${b}: ${ch} (directed=${!!r.directedness?.present}, vuln=${!!r.vulnerability?.present})`;
+    });
+    items.push({
+      title: "Relations (GoG trigger)",
+      body: state.ui.showRawTrace ? safeJSON(d.relations) : (relLines.length ? relLines.join("\n") : "No relations yet.")
+    });
+
+    const dutyLines = d.duties.map(dd => {
+      const a = entityLabel(dd.from);
+      const b = entityLabel(dd.to);
+      const bearers = (dd.bearers || []).map(id => entityLabel(id));
+      return `- ${a} -> ${b} [${dd.family}]: ${dd.description}${bearers.length ? `\n  bearer(s): ${bearers.join(", ")}` : ""}`;
+    });
+    items.push({
+      title: "Duties",
+      body: state.ui.showRawTrace ? safeJSON(d.duties) : (dutyLines.length ? dutyLines.join("\n") : "No duties yet.")
+    });
+
+    items.push({
+      title: "Residue ledger",
+      body: state.ui.showRawTrace ? safeJSON(d.residue) : (d.residue.length
+        ? d.residue.map(s => `- ${s.kind} on ${entityLabel(s.entity)} (enduring=${!!s.enduring})`).join("\n")
+        : "No residue recorded.")
+    });
+
+    for(const it of items){
+      const wrap = document.createElement("div");
+      wrap.className = "trace-item";
+      wrap.innerHTML = `
+        <div class="k">
+          <span>${escapeHTML(it.title)}</span>
+          <span class="muted">${escapeHTML(d.case.id)}</span>
+        </div>
+        <pre>${escapeHTML(it.body)}</pre>
+      `;
+      traceEl.appendChild(wrap);
+    }
+  }
+
+  // ---------- Stepper ----------
+  function isStepDone(key){
+    const d = state.data;
+    if(key === "case") return !!d.case.title && !!d.case.description;
+    if(key === "entities") return d.entities.length >= 2;
+    if(key === "iat") return d.entities.length > 0 && d.entities.every(e => !!d.iat[e.id]);
+    if(key === "relations") return d.relations.length > 0;
+    if(key === "duties") return d.duties.length > 0;
+    if(key === "events") return d.events.length > 0 || d.residue.length > 0;
+    if(key === "repair") return d.repair_plans.length > 0 || d.residue.length === 0;
+    if(key === "export") return true;
+    return false;
+  }
+
+  function renderStepper(){
+    const el = $("#stepper");
+    el.innerHTML = "";
+    steps.forEach((s, idx) => {
+      const done = isStepDone(s.key);
+      const div = document.createElement("div");
+      div.className = "step" + (idx === state.ui.stepIndex ? " active" : "");
+      div.innerHTML = `
+        <div class="dot ${done ? "done": ""}">${done ? "✓" : (idx+1)}</div>
+        <div class="meta">
+          <strong>${escapeHTML(s.label)}</strong>
+          <span>${escapeHTML(s.sub)}</span>
+        </div>
+      `;
+      div.addEventListener("click", () => {
+        state.ui.stepIndex = idx;
+        render();
+      });
+      el.appendChild(div);
+    });
+    $("#stepHint").textContent = steps[state.ui.stepIndex]?.label || "Wizard";
+  }
+
+  // ---------- Center Rendering ----------
+  function renderCenter(){
+    const step = steps[state.ui.stepIndex];
+    $("#centerTitle").textContent = step.label;
+    const body = $("#centerBody");
+    body.innerHTML = "";
+
+    if(step.key === "case") renderCaseStep(body);
+    if(step.key === "entities") renderEntitiesStep(body);
+    if(step.key === "iat") renderIATStep(body);
+    if(step.key === "relations") renderRelationsStep(body);
+    if(step.key === "duties") renderDutiesStep(body);
+    if(step.key === "events") renderEventsStep(body);
+    if(step.key === "repair") renderRepairStep(body);
+    if(step.key === "export") renderExportStep(body);
+
+    $("#btnPrev").disabled = state.ui.stepIndex === 0;
+    $("#btnNext").disabled = state.ui.stepIndex === steps.length - 1;
+
+    STATUS(`Step ${state.ui.stepIndex + 1}/${steps.length}: ${step.label}`);
+  }
+
+  // ---------- Step: Case ----------
+  function renderCaseStep(body){
+    const d = state.data.case;
+    const wrap = document.createElement("div");
+    wrap.className = "grid grid-1";
+
+    wrap.innerHTML = `
+      <div class="card">
+        <div class="row">
+          <div>
+            <div class="h4">Case Setup</div>
+            <div class="small">Define the domain profile and scenario description used by IAT and GoG prompts.</div>
+          </div>
+          <span class="pill">case</span>
+        </div>
+
+        <div class="grid">
+          <div>
+            <label>Case Title</label>
+            <input id="caseTitle" placeholder="Example: Platform suspension dispute" value="${escapeHTML(d.title)}" />
+          </div>
+          <div>
+            <label>Domain</label>
+            <select id="caseDomain">
+              ${["moral","legal","professional","community","family","platform"].map(x => `
+                <option value="${x}" ${d.domain===x?"selected":""}>${x}</option>
+              `).join("")}
+            </select>
+          </div>
+        </div>
+
+        <div class="grid">
+          <div>
+            <label>Time Horizon</label>
+            <select id="caseTimeHorizon">
+              <option value="single_event" ${d.time_horizon==="single_event"?"selected":""}>single_event</option>
+              <option value="ongoing" ${d.time_horizon==="ongoing"?"selected":""}>ongoing</option>
+            </select>
+          </div>
+          <div>
+            <label>Case ID (optional)</label>
+            <input id="caseId" placeholder="case_001" value="${escapeHTML(d.id)}" />
+          </div>
+        </div>
+
+        <div>
+          <label>Scenario Description</label>
+          <textarea id="caseDesc" placeholder="Describe what happened and what moral questions you want to answer.">${escapeHTML(d.description)}</textarea>
+        </div>
+
+        <div class="row">
+          <span class="small muted">Created: ${escapeHTML(d.created_at)}</span>
+          <button class="btn btn-primary" id="saveCase">Save</button>
+        </div>
+      </div>
+    `;
+
+    body.appendChild(wrap);
+
+    $("#saveCase").addEventListener("click", () => {
+      state.data.case.title = $("#caseTitle").value.trim();
+      state.data.case.domain = $("#caseDomain").value;
+      state.data.case.time_horizon = $("#caseTimeHorizon").value;
+      state.data.case.description = $("#caseDesc").value.trim();
+      const cid = $("#caseId").value.trim();
+      if(cid) state.data.case.id = cid;
+      render();
+    });
+  }
+
+  // ---------- Step: Entities ----------
+  function renderEntitiesStep(body){
+    const wrap = document.createElement("div");
+    wrap.className = "grid grid-1";
+
+    const list = document.createElement("div");
+    list.className = "cards";
+
+    const header = document.createElement("div");
+    header.className = "card";
+    header.innerHTML = `
+      <div class="row">
+        <div>
+          <div class="h4">Entities</div>
+          <div class="small">Add 2+ entities. BFO typing is optional and used only for category warnings (not for moral decisions).</div>
+        </div>
+        <button class="btn btn-primary" id="addEntity">Add Entity</button>
+      </div>
+    `;
+    wrap.appendChild(header);
+
+    if(state.data.entities.length === 0){
+      const empty = document.createElement("div");
+      empty.className = "card";
+      empty.innerHTML = `<div class="small muted">No entities yet. Add at least two (for A → B relations).</div>`;
+      list.appendChild(empty);
+    } else {
+      state.data.entities.forEach((e) => {
+        if(!e.bfo_type) e.bfo_type = inferBFOType(e);
+        const cls = computeIATClassification(state.data.iat[e.id]);
+        const pillClass = cls === "normative_agent" ? "good" : (cls === "normative_instrument" ? "warn" : (cls==="proto_or_none" ? "bad" : ""));
+        const pillText = cls === "unassessed" ? "iat: unassessed" : `iat: ${cls}`;
+
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <div class="top">
+            <div>
+              <div class="row" style="align-items:baseline;">
+                <div class="h4">${escapeHTML(e.label || "(unnamed)")}</div>
+                <span class="pill ${pillClass}">${escapeHTML(pillText)}</span>
+              </div>
+              <div class="small">${escapeHTML(e.type)} • bfo: <span class="mono">${escapeHTML(e.bfo_type)}</span> • id: <span class="mono">${escapeHTML(e.id)}</span></div>
+            </div>
+            <button class="btn btn-danger" data-del="${escapeHTML(e.id)}">Delete</button>
+          </div>
+
+          <div class="grid">
+            <div>
+              <label>Label</label>
+              <input data-k="label" data-id="${escapeHTML(e.id)}" value="${escapeHTML(e.label)}" placeholder="Example: Alice" />
+            </div>
+            <div>
+              <label>Type</label>
+              <select data-k="type" data-id="${escapeHTML(e.id)}">
+                ${["human","institution","animal","ai_system","artifact","ecosystem","other"].map(t => `
+                  <option value="${t}" ${e.type===t?"selected":""}>${t}</option>
+                `).join("")}
+              </select>
+            </div>
+          </div>
+
+          <div class="grid">
+            <div>
+              <label>BFO type (optional)</label>
+              <select data-k="bfo_type" data-id="${escapeHTML(e.id)}">
+                ${Object.values(BFO).map(v => `<option value="${v}" ${e.bfo_type===v?"selected":""}>${v}</option>`).join("")}
+              </select>
+            </div>
+            <div>
+              <label>Notes</label>
+              <input data-k="notes" data-id="${escapeHTML(e.id)}" value="${escapeHTML(e.notes || "")}" placeholder="Short notes or evidence pointers" />
+            </div>
+          </div>
+
+          <div class="grid">
+            <div>
+              <label>Governance controllers (comma-separated entity IDs)</label>
+              <input data-k="controllers" data-id="${escapeHTML(e.id)}" value="${escapeHTML((e.governance?.controllers || []).join(", "))}" placeholder="Example: E2, E3" />
+            </div>
+            <div class="toggle">
+              <input type="checkbox" data-k="can_reset" data-id="${escapeHTML(e.id)}" ${e.governance?.can_reset ? "checked": ""} />
+              <div class="tmeta">
+                <strong>Can reset or exit to erase residue?</strong>
+                <span>If checked, you are indicating residue may be resettable for this entity under the current domain arrangement.</span>
+              </div>
+            </div>
+          </div>
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    wrap.appendChild(list);
+    body.appendChild(wrap);
+
+    $("#addEntity").addEventListener("click", () => {
+      const id = uid("E");
+      state.data.entities.push({
+        id,
+        label: "",
+        type: "human",
+        bfo_type: BFO.IC,
+        notes: "",
+        governance: { controllers: [], can_reset: false }
+      });
+      render();
+    });
+
+    $$("#centerBody [data-del]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-del");
+        state.data.entities = state.data.entities.filter(e => e.id !== id);
+        delete state.data.iat[id];
+        state.data.relations = state.data.relations.filter(r => r.from !== id && r.to !== id);
+        state.data.duties = state.data.duties.filter(d => d.from !== id && d.to !== id && !(d.bearers||[]).includes(id));
+        state.data.events = state.data.events.filter(ev => ev.actor !== id && ev.target !== id);
+        state.data.residue = state.data.residue.filter(s => s.entity !== id);
+        state.data.entities.forEach(e => {
+          if(e.governance?.controllers){
+            e.governance.controllers = e.governance.controllers.filter(x => x !== id);
+          }
+        });
+        render();
+      });
+    });
+
+    $$("#centerBody [data-k]").forEach(inp => {
+      const key = inp.getAttribute("data-k");
+      const id = inp.getAttribute("data-id");
+      inp.addEventListener("input", () => {
+        const ent = state.data.entities.find(x => x.id === id);
+        if(!ent) return;
+
+        if(key === "label") ent.label = inp.value;
+        if(key === "type") ent.type = inp.value;
+        if(key === "bfo_type") ent.bfo_type = inp.value;
+        if(key === "notes") ent.notes = inp.value;
+
+        if(key === "controllers"){
+          ent.governance.controllers = inp.value.split(",").map(s => s.trim()).filter(Boolean);
+        }
+        if(key === "can_reset"){
+          ent.governance.can_reset = inp.checked;
+        }
+        renderDiagnostics();
+        renderTrace();
+      });
+      inp.addEventListener("change", () => {
+        const ent = state.data.entities.find(x => x.id === id);
+        if(!ent) return;
+        if(key === "type" && (!ent.bfo_type || ent.bfo_type === BFO.IC)){
+          ent.bfo_type = inferBFOType(ent);
+        }
+        render();
+      });
+    });
+  }
+
+  // ---------- Step: IAT ----------
+  function ensureIATRecord(entityId){
+    if(!state.data.iat[entityId]){
+      state.data.iat[entityId] = {
+        standing: { pass: false, evidence: [] },
+        breach: { pass: false, evidence: [] },
+        non_resettable_residue: { pass: false, evidence: [] },
+        repair_capacity: { pass: false, evidence: [] },
+        counterfactual_control: { pass: false, evidence: [] },
+        classification: "unassessed",
+        residue_locus_notes: "",
+        residue_locus_ids: []
+      };
+    }
+    return state.data.iat[entityId];
+  }
+
+  function renderIATStep(body){
+    const wrap = document.createElement("div");
+    wrap.className = "grid grid-1";
+
+    if(state.data.entities.length === 0){
+      const empty = document.createElement("div");
+      empty.className = "card";
+      empty.innerHTML = `<div class="small muted">Add entities first.</div>`;
+      body.appendChild(empty);
+      return;
+    }
+
+    const intro = document.createElement("div");
+    intro.className = "card";
+    intro.innerHTML = `
+      <div class="row">
+        <div>
+          <div class="h4">Irreversible Accountability Test (IAT)</div>
+          <div class="small">Set pass/fail and record brief evidence. Classification updates automatically. If an entity fails IAT, duties should route to residue loci.</div>
+        </div>
+        <span class="pill">iat</span>
+      </div>
+    `;
+    wrap.appendChild(intro);
+
+    state.data.entities.forEach(e => {
+      const rec = ensureIATRecord(e.id);
+      rec.classification = computeIATClassification(rec);
+
+      const pillClass = rec.classification === "normative_agent" ? "good" : (rec.classification === "normative_instrument" ? "warn" : "bad");
+      const locusValue = (rec.residue_locus_ids || []).join(", ");
+
+      const card = document.createElement("div");
+      card.className = "card";
+
+      card.innerHTML = `
+        <div class="row" style="align-items:baseline;">
+          <div>
+            <div class="h4">${escapeHTML(e.label || "(unnamed)")}</div>
+            <div class="small">${escapeHTML(e.type)} • id: <span class="mono">${escapeHTML(e.id)}</span></div>
+          </div>
+          <span class="pill ${pillClass}">classification: ${escapeHTML(rec.classification)}</span>
+        </div>
+
+        ${iatToggleRow(e.id, "standing", "Standing", "Is this entity an intelligible addressee of claims in this domain?")}
+        ${iatToggleRow(e.id, "breach", "Breach-capable", "Can it breach claims in an attributable way (not mere malfunction)?")}
+        ${iatToggleRow(e.id, "non_resettable_residue", "Non-resettable residue", "Can breach generate enduring residue that cannot be erased by reset, exit, or redescription?")}
+        ${iatToggleRow(e.id, "repair_capacity", "Repair capacity", "Can it undertake or refuse repair in assessable ways?")}
+        ${iatToggleRow(e.id, "counterfactual_control", "Counterfactual attributable control", "Could it have done otherwise within the domain option-space, attributable to it?")}
+
+        <div class="grid">
+          <div>
+            <label>Residue locus IDs (comma-separated)</label>
+            <input data-iat="residue_locus_ids" data-id="${escapeHTML(e.id)}" value="${escapeHTML(locusValue)}" placeholder="If not an IAT agent, where does residue land? Example: E2 (operator), E3 (institution)" />
+          </div>
+          <div>
+            <label>Residue locus notes</label>
+            <input data-iat="residue_locus_notes" data-id="${escapeHTML(e.id)}" value="${escapeHTML(rec.residue_locus_notes || "")}" placeholder="Short explanation of where liability/trust/repair terminates" />
+          </div>
+        </div>
+      `;
+      wrap.appendChild(card);
+    });
+
+    body.appendChild(wrap);
+
+    $$("#centerBody input[type='checkbox'][data-iat]").forEach(chk => {
+      chk.addEventListener("change", () => {
+        const entityId = chk.getAttribute("data-id");
+        const key = chk.getAttribute("data-iat");
+        const rec = ensureIATRecord(entityId);
+        rec[key].pass = chk.checked;
+        rec.classification = computeIATClassification(rec);
+
+        // auto-reroute empty bearers
+        state.data.duties.forEach(dd => {
+          if(dd.from === entityId && (!dd.bearers || dd.bearers.length === 0)){
+            dd.bearers = getDutyBearers(entityId);
+          }
+        });
+
+        render();
+      });
+    });
+
+    $$("#centerBody textarea[data-iat]").forEach(ta => {
+      ta.addEventListener("input", () => {
+        const entityId = ta.getAttribute("data-id");
+        const key = ta.getAttribute("data-iat");
+        const rec = ensureIATRecord(entityId);
+        rec[key].evidence = ta.value.split("\n").map(s => s.trim()).filter(Boolean);
+        renderDiagnostics();
+        renderTrace();
+      });
+    });
+
+    $$("#centerBody input[data-iat='residue_locus_ids']").forEach(inp => {
+      inp.addEventListener("input", () => {
+        const entityId = inp.getAttribute("data-id");
+        const rec = ensureIATRecord(entityId);
+        rec.residue_locus_ids = inp.value.split(",").map(s => s.trim()).filter(Boolean);
+        renderDiagnostics();
+        renderTrace();
+      });
+    });
+
+    $$("#centerBody input[data-iat='residue_locus_notes']").forEach(inp => {
+      inp.addEventListener("input", () => {
+        const entityId = inp.getAttribute("data-id");
+        const rec = ensureIATRecord(entityId);
+        rec.residue_locus_notes = inp.value;
+        renderDiagnostics();
+        renderTrace();
+      });
+    });
+  }
+
+  function iatToggleRow(entityId, key, title, desc){
+    const rec = ensureIATRecord(entityId);
+    const checked = rec[key]?.pass ? "checked" : "";
+    const evidence = (rec[key]?.evidence || []).join("\n");
+    return `
+      <div class="toggle">
+        <input type="checkbox" data-iat="${escapeHTML(key)}" data-id="${escapeHTML(entityId)}" ${checked} />
+        <div class="tmeta" style="flex:1;">
+          <strong>${escapeHTML(title)}</strong>
+          <span>${escapeHTML(desc)}</span>
+          <div style="margin-top:10px;">
+            <label>Evidence (one per line)</label>
+            <textarea data-iat="${escapeHTML(key)}" data-id="${escapeHTML(entityId)}" placeholder="Add brief evidence lines...">${escapeHTML(evidence)}</textarea>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // ---------- Step: Relations ----------
+  function renderRelationsStep(body){
+    const wrap = document.createElement("div");
+    wrap.className = "grid grid-1";
+
+    const d = state.data;
+
+    const header = document.createElement("div");
+    header.className = "card";
+    header.innerHTML = `
+      <div class="row">
+        <div>
+          <div class="h4">Relations (GoG triggers)</div>
+          <div class="small">Define ordered pairs A → B with directedness, vulnerability, and role context. GoG trigger: directedness + vulnerability implies an obligation edge.</div>
+        </div>
+        <button class="btn btn-primary" id="addRelation">Add Relation</button>
+      </div>
+    `;
+    wrap.appendChild(header);
+
+    if(d.entities.length < 2){
+      const warn = document.createElement("div");
+      warn.className = "card";
+      warn.innerHTML = `<div class="small muted">Add at least two entities first.</div>`;
+      wrap.appendChild(warn);
+      body.appendChild(wrap);
+      return;
+    }
+
+    const list = document.createElement("div");
+    list.className = "cards";
+
+    if(d.relations.length === 0){
+      const empty = document.createElement("div");
+      empty.className = "card";
+      empty.innerHTML = `<div class="small muted">No relations yet. Add at least one A → B relation.</div>`;
+      list.appendChild(empty);
+    } else {
+      d.relations.forEach(r => {
+        const charged = relationCharged(r);
+        const pillClass = charged ? "good" : "warn";
+        const fromLbl = entityLabel(r.from);
+        const toLbl = entityLabel(r.to);
+
+        const roleCtx = (r.role_context || []).join(", ");
+        const vulnDims = (r.vulnerability?.dimensions || []).join(", ");
+
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <div class="top">
+            <div>
+              <div class="row" style="align-items:baseline;">
+                <div class="h4">${escapeHTML(fromLbl)} <span class="muted">→</span> ${escapeHTML(toLbl)}</div>
+                <span class="pill ${pillClass}">${charged ? "charged: obligation trigger" : "neutral"}</span>
+              </div>
+              <div class="small">id: <span class="mono">${escapeHTML(r.id)}</span></div>
+            </div>
+            <button class="btn btn-danger" data-rel-del="${escapeHTML(r.id)}">Delete</button>
+          </div>
+
+          <div class="grid">
+            <div>
+              <label>From (A)</label>
+              <select data-rel="from" data-relid="${escapeHTML(r.id)}">
+                ${d.entities.map(e => `<option value="${e.id}" ${e.id===r.from?"selected":""}>${escapeHTML(e.label || e.id)}</option>`).join("")}
+              </select>
+            </div>
+            <div>
+              <label>To (B)</label>
+              <select data-rel="to" data-relid="${escapeHTML(r.id)}">
+                ${d.entities.map(e => `<option value="${e.id}" ${e.id===r.to?"selected":""}>${escapeHTML(e.label || e.id)}</option>`).join("")}
+              </select>
+            </div>
+          </div>
+
+          <div class="split">
+            <div class="toggle">
+              <input type="checkbox" data-rel="directedness.present" data-relid="${escapeHTML(r.id)}" ${r.directedness?.present ? "checked": ""} />
+              <div class="tmeta">
+                <strong>Directedness present</strong>
+                <span>Contact, recognition, representation, dependence, interaction.</span>
+              </div>
+            </div>
+
+            <div class="toggle">
+              <input type="checkbox" data-rel="vulnerability.present" data-relid="${escapeHTML(r.id)}" ${r.vulnerability?.present ? "checked": ""} />
+              <div class="tmeta">
+                <strong>Vulnerability present</strong>
+                <span>Harmable, dependent, exposed, excluded, future-impacted.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid">
+            <div>
+              <label>Directedness evidence (one per line)</label>
+              <textarea data-rel="directedness.evidence" data-relid="${escapeHTML(r.id)}" placeholder="Evidence lines...">${escapeHTML((r.directedness?.evidence || []).join("\n"))}</textarea>
+            </div>
+            <div>
+              <label>Vulnerability dimensions (comma-separated)</label>
+              <input data-rel="vulnerability.dimensions" data-relid="${escapeHTML(r.id)}" value="${escapeHTML(vulnDims)}" placeholder="Example: care, exposure, dependence" />
+              <div style="height:10px;"></div>
+              <label>Role context (comma-separated)</label>
+              <input data-rel="role_context" data-relid="${escapeHTML(r.id)}" value="${escapeHTML(roleCtx)}" placeholder="Example: caregiver, custodian, platform_operator" />
+            </div>
+          </div>
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    wrap.appendChild(list);
+    body.appendChild(wrap);
+
+    $("#addRelation").addEventListener("click", () => {
+      const id = uid("R");
+      const A = state.data.entities[0]?.id;
+      const B = state.data.entities[1]?.id;
+      state.data.relations.push({
+        id,
+        from: A,
+        to: B,
+        directedness: { present: false, evidence: [] },
+        vulnerability: { present: false, dimensions: [] },
+        role_context: []
+      });
+      render();
+    });
+
+    $$("#centerBody [data-rel-del]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const rid = btn.getAttribute("data-rel-del");
+        state.data.relations = state.data.relations.filter(r => r.id !== rid);
+        state.data.duties = state.data.duties.filter(d => d.relation_id !== rid);
+        render();
+      });
+    });
+
+    $$("#centerBody [data-rel]").forEach(el => {
+      el.addEventListener("change", () => {
+        const rid = el.getAttribute("data-relid");
+        const key = el.getAttribute("data-rel");
+        const rel = state.data.relations.find(r => r.id === rid);
+        if(!rel) return;
+
+        if(key === "from") rel.from = el.value;
+        if(key === "to") rel.to = el.value;
+
+        if(key === "directedness.present") rel.directedness.present = el.checked;
+        if(key === "vulnerability.present") rel.vulnerability.present = el.checked;
+
+        if(key === "vulnerability.dimensions"){
+          rel.vulnerability.dimensions = el.value.split(",").map(s => s.trim()).filter(Boolean);
+        }
+        if(key === "role_context"){
+          rel.role_context = el.value.split(",").map(s => s.trim()).filter(Boolean);
+        }
+        render();
+      });
+      el.addEventListener("input", () => {
+        const rid = el.getAttribute("data-relid");
+        const key = el.getAttribute("data-rel");
+        const rel = state.data.relations.find(r => r.id === rid);
+        if(!rel) return;
+
+        if(key === "directedness.evidence"){
+          rel.directedness.evidence = el.value.split("\n").map(s => s.trim()).filter(Boolean);
+        }
+        if(key === "vulnerability.dimensions"){
+          rel.vulnerability.dimensions = el.value.split(",").map(s => s.trim()).filter(Boolean);
+        }
+        if(key === "role_context"){
+          rel.role_context = el.value.split(",").map(s => s.trim()).filter(Boolean);
+        }
+        renderDiagnostics();
+        renderTrace();
+      });
+    });
+  }
+
+  // ---------- Step: Duties ----------
+  const DUTY_FAMILIES = [
+    { key: "recognition", label: "Recognition duties" },
+    { key: "non_violation", label: "Non-violation duties" },
+    { key: "support", label: "Support duties" },
+    { key: "repair", label: "Repair duties" },
+  ];
+
+  function inferDutiesFromRelations(){
+    const d = state.data;
+    const existingKey = new Set(d.duties.map(x => `${x.relation_id}|${x.family}`));
+
+    d.relations.forEach(r => {
+      if(!relationCharged(r)) return;
+
+      DUTY_FAMILIES.forEach(fam => {
+        const k = `${r.id}|${fam.key}`;
+        if(existingKey.has(k)) return;
+
+        const from = r.from;
+        const to = r.to;
+        const bearers = getDutyBearers(from);
+
+        const baseDesc = {
+          recognition: "Do not deny standing where the relation is ethically live; do not erase or treat as mere instrument.",
+          non_violation: "Do not impose avoidable harm; do not exploit asymmetry; do not sabotage voice or agency.",
+          support: "Where dependence is significant, provide reasonable support, protection, or rescue as context demands.",
+          repair: "If rupture occurs, undertake restitution, acknowledgment, and structural remedy appropriate to the breach."
+        }[fam.key] || "Describe the duty...";
+
+        d.duties.push({
+          id: uid("D"),
+          relation_id: r.id,
+          from,
+          to,
+          family: fam.key,
+          description: baseDesc,
+          justification: ["directedness+vulnerability", ...(r.role_context?.length ? ["role_context"] : [])],
+          status: "owed",
+          bearers
+        });
+      });
+    });
+  }
+
+  function renderDutiesStep(body){
+    const wrap = document.createElement("div");
+    wrap.className = "grid grid-1";
+
+    const header = document.createElement("div");
+    header.className = "card";
+    header.innerHTML = `
+      <div class="row">
+        <div>
+          <div class="h4">Duties</div>
+          <div class="small">Infer one duty per family for each charged relation. Duties route via IAT: if the "from" entity fails IAT, bearers should be residue loci (or controllers).</div>
+        </div>
+        <div class="row">
+          <button class="btn" id="inferDuties">Infer Duties</button>
+          <button class="btn btn-primary" id="addDuty">Add Duty</button>
+        </div>
+      </div>
+    `;
+    wrap.appendChild(header);
+
+    const d = state.data;
+
+    if(d.entities.length < 2){
+      const warn = document.createElement("div");
+      warn.className = "card";
+      warn.innerHTML = `<div class="small muted">Add entities first.</div>`;
+      wrap.appendChild(warn);
+      body.appendChild(wrap);
+      return;
+    }
+    if(d.relations.length === 0){
+      const warn = document.createElement("div");
+      warn.className = "card";
+      warn.innerHTML = `<div class="small muted">Add relations first.</div>`;
+      wrap.appendChild(warn);
+      body.appendChild(wrap);
+      return;
+    }
+
+    // Horizontal slider container
+    const list = document.createElement("div");
+    list.className = "duty-slider";
+
+    if(d.duties.length === 0){
+      const empty = document.createElement("div");
+      empty.className = "card duty-card";
+      empty.innerHTML = `<div class="small muted">No duties yet. Use "Infer Duties" or add one manually.</div>`;
+      list.appendChild(empty);
+    } else {
+      d.duties.forEach(dd => {
+        const a = entityLabel(dd.from);
+        const b = entityLabel(dd.to);
+        const bearersLbl = (dd.bearers || []).map(id => entityLabel(id)).join(", ");
+        const fam = DUTY_FAMILIES.find(x => x.key === dd.family)?.label || dd.family;
+
+        const card = document.createElement("div");
+        card.className = "card duty-card";
+        card.innerHTML = `
+          <div class="top">
+            <div>
+              <div class="row" style="align-items:baseline;">
+                <div class="h4">${escapeHTML(a)} <span class="muted">→</span> ${escapeHTML(b)}</div>
+                <span class="pill">${escapeHTML(dd.family)}</span>
+              </div>
+              <div class="small">${escapeHTML(fam)} • id: <span class="mono">${escapeHTML(dd.id)}</span></div>
+              <div class="small">Bearer labels: <span class="muted">${escapeHTML(bearersLbl || "(none)")}</span></div>
+            </div>
+            <button class="btn btn-danger" data-duty-del="${escapeHTML(dd.id)}">Delete</button>
+          </div>
+
+          <div class="grid">
+            <div>
+              <label>Family</label>
+              <select data-duty="family" data-dutyid="${escapeHTML(dd.id)}">
+                ${DUTY_FAMILIES.map(f => `<option value="${f.key}" ${dd.family===f.key?"selected":""}>${escapeHTML(f.key)}</option>`).join("")}
+              </select>
+            </div>
+            <div>
+              <label>Status</label>
+              <select data-duty="status" data-dutyid="${escapeHTML(dd.id)}">
+                ${["owed","fulfilled","denied","expired"].map(s => `<option value="${s}" ${dd.status===s?"selected":""}>${s}</option>`).join("")}
+              </select>
+            </div>
+          </div>
+
+          <details>
+            <summary>Edit duty details</summary>
+
+            <div class="grid" style="margin-top:10px;">
+              <div>
+                <label>Description</label>
+                <textarea data-duty="description" data-dutyid="${escapeHTML(dd.id)}">${escapeHTML(dd.description || "")}</textarea>
+              </div>
+              <div>
+                <label>Bearers (comma-separated entity IDs)</label>
+                <input data-duty="bearers" data-dutyid="${escapeHTML(dd.id)}" value="${escapeHTML((dd.bearers||[]).join(", "))}" placeholder="Auto-routed via IAT, but editable" />
+                <div style="height:10px;"></div>
+                <label>Justification (read-only)</label>
+                <input value="${escapeHTML((dd.justification||[]).join(", "))}" readonly />
+              </div>
+            </div>
+
+            <div class="grid">
+              <div>
+                <label>From</label>
+                <select data-duty="from" data-dutyid="${escapeHTML(dd.id)}">
+                  ${d.entities.map(e => `<option value="${e.id}" ${e.id===dd.from?"selected":""}>${escapeHTML(e.label || e.id)}</option>`).join("")}
+                </select>
+              </div>
+              <div>
+                <label>To</label>
+                <select data-duty="to" data-dutyid="${escapeHTML(dd.id)}">
+                  ${d.entities.map(e => `<option value="${e.id}" ${e.id===dd.to?"selected":""}>${escapeHTML(e.label || e.id)}</option>`).join("")}
+                </select>
+              </div>
+            </div>
+          </details>
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    wrap.appendChild(list);
+    body.appendChild(wrap);
+
+    $("#inferDuties").addEventListener("click", () => {
+      inferDutiesFromRelations();
+      // refresh bearers routing
+      state.data.duties.forEach(dd => { dd.bearers = dd.bearers && dd.bearers.length ? dd.bearers : getDutyBearers(dd.from); });
+      render();
+    });
+
+    $("#addDuty").addEventListener("click", () => {
+      if(state.data.entities.length < 2) return;
+      const from = state.data.entities[0].id;
+      const to = state.data.entities[1].id;
+      state.data.duties.push({
+        id: uid("D"),
+        relation_id: null,
+        from, to,
+        family: "recognition",
+        description: "",
+        justification: [],
+        status: "owed",
+        bearers: getDutyBearers(from)
+      });
+      render();
+    });
+
+    $$("#centerBody [data-duty-del]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const did = btn.getAttribute("data-duty-del");
+        state.data.duties = state.data.duties.filter(d => d.id !== did);
+        render();
+      });
+    });
+
+    $$("#centerBody [data-duty]").forEach(el => {
+      el.addEventListener("change", () => {
+        const did = el.getAttribute("data-dutyid");
+        const key = el.getAttribute("data-duty");
+        const dd = state.data.duties.find(x => x.id === did);
+        if(!dd) return;
+
+        if(key === "family") dd.family = el.value;
+        if(key === "status") dd.status = el.value;
+        if(key === "from"){
+          dd.from = el.value;
+          dd.bearers = getDutyBearers(dd.from);
+        }
+        if(key === "to") dd.to = el.value;
+
+        render();
+      });
+
+      el.addEventListener("input", () => {
+        const did = el.getAttribute("data-dutyid");
+        const key = el.getAttribute("data-duty");
+        const dd = state.data.duties.find(x => x.id === did);
+        if(!dd) return;
+
+        if(key === "description") dd.description = el.value;
+        if(key === "bearers"){
+          dd.bearers = el.value.split(",").map(s => s.trim()).filter(Boolean);
+        }
+        renderDiagnostics();
+        renderTrace();
+      });
+    });
+  }
+
+  // ---------- Step: Events and Residue ----------
+  function renderEventsStep(body){
+    const wrap = document.createElement("div");
+    wrap.className = "grid grid-1";
+
+    const header = document.createElement("div");
+    header.className = "card";
+    header.innerHTML = `
+      <div class="row">
+        <div>
+          <div class="h4">Breach and Residue</div>
+          <div class="small">Record breach events and enduring residue. Residue supports IAT accountability and GoG repair planning.</div>
+        </div>
+        <div class="row">
+          <button class="btn" id="addEvent">Add Event</button>
+          <button class="btn btn-primary" id="addResidue">Add Residue</button>
+        </div>
+      </div>
+    `;
+    wrap.appendChild(header);
+
+    const eventsList = document.createElement("div");
+    eventsList.className = "cards";
+
+    if(state.data.events.length === 0){
+      const empty = document.createElement("div");
+      empty.className = "card";
+      empty.innerHTML = `<div class="small muted">No events recorded.</div>`;
+      eventsList.appendChild(empty);
+    } else {
+      state.data.events.forEach(ev => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <div class="top">
+            <div>
+              <div class="h4">${escapeHTML(ev.type || "event")}</div>
+              <div class="small">id: <span class="mono">${escapeHTML(ev.id)}</span></div>
+            </div>
+            <button class="btn btn-danger" data-ev-del="${escapeHTML(ev.id)}">Delete</button>
+          </div>
+
+          <div class="grid">
+            <div>
+              <label>Type</label>
+              <select data-ev="type" data-evid="${escapeHTML(ev.id)}">
+                ${["breach","contact","denial","repair_attempt","other"].map(t => `<option value="${t}" ${ev.type===t?"selected":""}>${t}</option>`).join("")}
+              </select>
+            </div>
+            <div>
+              <label>Linked duty (optional)</label>
+              <select data-ev="linked_duty" data-evid="${escapeHTML(ev.id)}">
+                <option value="">(none)</option>
+                ${state.data.duties.map(d => `<option value="${d.id}" ${ev.linked_duty===d.id?"selected":""}>${escapeHTML(d.id)} • ${escapeHTML(d.family)} • ${escapeHTML(entityLabel(d.from))} → ${escapeHTML(entityLabel(d.to))}</option>`).join("")}
+              </select>
+            </div>
+          </div>
+
+          <div class="grid">
+            <div>
+              <label>Actor</label>
+              <select data-ev="actor" data-evid="${escapeHTML(ev.id)}">
+                ${state.data.entities.map(e => `<option value="${e.id}" ${ev.actor===e.id?"selected":""}>${escapeHTML(e.label || e.id)}</option>`).join("")}
+              </select>
+            </div>
+            <div>
+              <label>Target</label>
+              <select data-ev="target" data-evid="${escapeHTML(ev.id)}">
+                ${state.data.entities.map(e => `<option value="${e.id}" ${ev.target===e.id?"selected":""}>${escapeHTML(e.label || e.id)}</option>`).join("")}
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label>Notes</label>
+            <input data-ev="notes" data-evid="${escapeHTML(ev.id)}" value="${escapeHTML(ev.notes || "")}" placeholder="What happened? Why is it a breach or relevant event?" />
+          </div>
+        `;
+        eventsList.appendChild(card);
+      });
+    }
+    wrap.appendChild(eventsList);
+
+    const residueHeader = document.createElement("div");
+    residueHeader.className = "card";
+    residueHeader.innerHTML = `<div class="h4">Residue ledger</div><div class="small muted">Enduring residue should have clearing conditions (repair plans).</div>`;
+    wrap.appendChild(residueHeader);
+
+    const residueList = document.createElement("div");
+    residueList.className = "cards";
+
+    if(state.data.residue.length === 0){
+      const empty = document.createElement("div");
+      empty.className = "card";
+      empty.innerHTML = `<div class="small muted">No residue recorded.</div>`;
+      residueList.appendChild(empty);
+    } else {
+      state.data.residue.forEach(s => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <div class="top">
+            <div>
+              <div class="h4">${escapeHTML(s.kind || "residue")}</div>
+              <div class="small">id: <span class="mono">${escapeHTML(s.id)}</span></div>
+            </div>
+            <button class="btn btn-danger" data-res-del="${escapeHTML(s.id)}">Delete</button>
+          </div>
+
+          <div class="grid">
+            <div>
+              <label>Entity</label>
+              <select data-res="entity" data-resid="${escapeHTML(s.id)}">
+                ${state.data.entities.map(e => `<option value="${e.id}" ${s.entity===e.id?"selected":""}>${escapeHTML(e.label || e.id)}</option>`).join("")}
+              </select>
+            </div>
+            <div>
+              <label>Relation (optional)</label>
+              <select data-res="relation" data-resid="${escapeHTML(s.id)}">
+                <option value="">(none)</option>
+                ${state.data.relations.map(r => {
+                  const a = entityLabel(r.from); const b = entityLabel(r.to);
+                  return `<option value="${r.id}" ${s.relation===r.id?"selected":""}>${escapeHTML(r.id)} • ${escapeHTML(a)} → ${escapeHTML(b)}</option>`;
+                }).join("")}
+              </select>
+            </div>
+          </div>
+
+          <div class="grid">
+            <div>
+              <label>Kind</label>
+              <select data-res="kind" data-resid="${escapeHTML(s.id)}">
+                ${["liability_or_debt","trust_loss","standing_constraint","exclusion","other"].map(k => `<option value="${k}" ${s.kind===k?"selected":""}>${k}</option>`).join("")}
+              </select>
+            </div>
+            <div class="toggle">
+              <input type="checkbox" data-res="enduring" data-resid="${escapeHTML(s.id)}" ${s.enduring ? "checked": ""} />
+              <div class="tmeta">
+                <strong>Enduring</strong>
+                <span>Check if residue persists until cleared by repair.</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label>Clearing conditions (repair plan IDs, comma-separated)</label>
+            <input data-res="clearing_conditions" data-resid="${escapeHTML(s.id)}" value="${escapeHTML((s.clearing_conditions||[]).join(", "))}" placeholder="Example: RP1, RP2" />
+          </div>
+        `;
+        residueList.appendChild(card);
+      });
+    }
+
+    wrap.appendChild(residueList);
+    body.appendChild(wrap);
+
+    $("#addEvent").addEventListener("click", () => {
+      if(state.data.entities.length === 0) return;
+      const id = uid("EV");
+      state.data.events.push({
+        id,
+        type: "breach",
+        actor: state.data.entities[0]?.id || "",
+        target: state.data.entities[1]?.id || "",
+        linked_duty: "",
+        notes: ""
+      });
+      render();
+    });
+
+    $("#addResidue").addEventListener("click", () => {
+      if(state.data.entities.length === 0) return;
+      const id = uid("S");
+      state.data.residue.push({
+        id,
+        entity: state.data.entities[0]?.id || "",
+        relation: "",
+        kind: "liability_or_debt",
+        enduring: true,
+        clearing_conditions: []
+      });
+      render();
+    });
+
+    $$("#centerBody [data-ev-del]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-ev-del");
+        state.data.events = state.data.events.filter(ev => ev.id !== id);
+        render();
+      });
+    });
+
+    $$("#centerBody [data-res-del]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-res-del");
+        state.data.residue = state.data.residue.filter(s => s.id !== id);
+        render();
+      });
+    });
+
+    $$("#centerBody [data-ev]").forEach(el => {
+      el.addEventListener("change", () => {
+        const id = el.getAttribute("data-evid");
+        const key = el.getAttribute("data-ev");
+        const ev = state.data.events.find(x => x.id === id);
+        if(!ev) return;
+        ev[key] = el.value;
+        renderDiagnostics();
+        renderTrace();
+      });
+      el.addEventListener("input", () => {
+        const id = el.getAttribute("data-evid");
+        const key = el.getAttribute("data-ev");
+        const ev = state.data.events.find(x => x.id === id);
+        if(!ev) return;
+        ev[key] = el.value;
+        renderDiagnostics();
+        renderTrace();
+      });
+    });
+
+    $$("#centerBody [data-res]").forEach(el => {
+      const isChk = el.type === "checkbox";
+      const handler = () => {
+        const id = el.getAttribute("data-resid");
+        const key = el.getAttribute("data-res");
+        const s = state.data.residue.find(x => x.id === id);
+        if(!s) return;
+
+        if(key === "enduring"){
+          s.enduring = el.checked;
+        } else if(key === "clearing_conditions"){
+          s.clearing_conditions = el.value.split(",").map(x => x.trim()).filter(Boolean);
+        } else {
+          s[key] = el.value;
+        }
+        renderDiagnostics();
+        renderTrace();
+      };
+      el.addEventListener(isChk ? "change" : "input", handler);
+      if(!isChk) el.addEventListener("change", handler);
+    });
+  }
+
+  // ---------- Step: Repair Planner ----------
+  function renderRepairStep(body){
+    const wrap = document.createElement("div");
+    wrap.className = "grid grid-1";
+
+    const header = document.createElement("div");
+    header.className = "card";
+    header.innerHTML = `
+      <div class="row">
+        <div>
+          <div class="h4">Repair Planner</div>
+          <div class="small">Create repair plans to clear residue. Plans list steps and indicate who must act.</div>
+        </div>
+        <button class="btn btn-primary" id="addRepairPlan">Add Repair Plan</button>
+      </div>
+    `;
+    wrap.appendChild(header);
+
+    if(state.data.residue.length === 0){
+      const note = document.createElement("div");
+      note.className = "card";
+      note.innerHTML = `<div class="small muted">No residue recorded. If there is no residue, repair planning can be empty.</div>`;
+      wrap.appendChild(note);
+    }
+
+    const list = document.createElement("div");
+    list.className = "cards";
+
+    if(state.data.repair_plans.length === 0){
+      const empty = document.createElement("div");
+      empty.className = "card";
+      empty.innerHTML = `<div class="small muted">No repair plans yet.</div>`;
+      list.appendChild(empty);
+    } else {
+      state.data.repair_plans.forEach(rp => {
+        const stepsText = (rp.steps || []).map(s => `${s.action} :: ${s.by}`).join("\n");
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <div class="top">
+            <div>
+              <div class="h4">Repair Plan</div>
+              <div class="small">id: <span class="mono">${escapeHTML(rp.id)}</span></div>
+            </div>
+            <button class="btn btn-danger" data-rp-del="${escapeHTML(rp.id)}">Delete</button>
+          </div>
+
+          <div class="grid">
+            <div>
+              <label>For residue</label>
+              <select data-rp="for_residue" data-rpid="${escapeHTML(rp.id)}">
+                <option value="">(none)</option>
+                ${state.data.residue.map(s => `<option value="${s.id}" ${rp.for_residue===s.id?"selected":""}>${escapeHTML(s.id)} • ${escapeHTML(s.kind)} • ${escapeHTML(entityLabel(s.entity))}</option>`).join("")}
+              </select>
+            </div>
+            <div>
+              <label>Notes</label>
+              <input data-rp="notes" data-rpid="${escapeHTML(rp.id)}" value="${escapeHTML(rp.notes || "")}" placeholder="Short plan summary..." />
+            </div>
+          </div>
+
+          <div>
+            <label>Steps (one per line, format: action :: entityId)</label>
+            <textarea data-rp="steps" data-rpid="${escapeHTML(rp.id)}" placeholder="acknowledge :: E1&#10;restitution :: E1&#10;structural_change :: E2">${escapeHTML(stepsText)}</textarea>
+          </div>
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    wrap.appendChild(list);
+    body.appendChild(wrap);
+
+    $("#addRepairPlan").addEventListener("click", () => {
+      const id = uid("RP");
+      state.data.repair_plans.push({
+        id,
+        for_residue: state.data.residue[0]?.id || "",
+        notes: "",
+        steps: [
+          { action: "acknowledge", by: state.data.entities[0]?.id || "" },
+          { action: "restitution", by: state.data.entities[0]?.id || "" },
+          { action: "structural_change", by: state.data.entities[0]?.id || "" }
+        ]
+      });
+      render();
+    });
+
+    $$("#centerBody [data-rp-del]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-rp-del");
+        state.data.repair_plans = state.data.repair_plans.filter(rp => rp.id !== id);
+        render();
+      });
+    });
+
+    $$("#centerBody [data-rp]").forEach(el => {
+      const key = el.getAttribute("data-rp");
+      el.addEventListener("input", () => {
+        const id = el.getAttribute("data-rpid");
+        const rp = state.data.repair_plans.find(x => x.id === id);
+        if(!rp) return;
+
+        if(key === "steps"){
+          rp.steps = el.value.split("\n")
+            .map(line => line.trim())
+            .filter(Boolean)
+            .map(line => {
+              const parts = line.split("::").map(x => x.trim());
+              return { action: parts[0] || "action", by: parts[1] || "" };
+            });
+        } else {
+          rp[key] = el.value;
+        }
+        renderDiagnostics();
+        renderTrace();
+      });
+      el.addEventListener("change", () => {
+        const id = el.getAttribute("data-rpid");
+        const rp = state.data.repair_plans.find(x => x.id === id);
+        if(!rp) return;
+        if(key !== "steps") rp[key] = el.value;
+        renderDiagnostics();
+        renderTrace();
+      });
+    });
+  }
+
+  // ---------- Step: Export ----------
+  function renderExportStep(body){
+    const wrap = document.createElement("div");
+    wrap.className = "grid grid-1";
+
+    const entitySummary = state.data.entities.map(e => {
+      const cls = computeIATClassification(state.data.iat[e.id]);
+      return `- ${e.label || e.id}: ${cls} (bfo=${e.bfo_type || inferBFOType(e)})`;
+    }).join("\n") || "No entities.";
+
+    const chargedEdges = state.data.relations
+      .filter(relationCharged)
+      .map(r => `${entityLabel(r.from)} → ${entityLabel(r.to)} (charged)`)
+      .join("\n") || "No charged relations.";
+
+    const dutiesSummary = state.data.duties.slice(0, 14).map(d => {
+      const b = (d.bearers || []).map(id => entityLabel(id)).join(", ");
+      return `- ${entityLabel(d.from)} → ${entityLabel(d.to)} [${d.family}] bearer(s): ${b || "(none)"}`;
+    }).join("\n") || "No duties.";
+
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <div class="row">
+        <div>
+          <div class="h4">Export</div>
+          <div class="small">JSON export follows the exact object shape used throughout the wizard. Use top buttons to copy or download. You can re-import via Load JSON.</div>
+        </div>
+        <span class="pill">json</span>
+      </div>
+
+      <div class="grid">
+        <div>
+          <label>Summary</label>
+          <textarea readonly>${[
+            "IAT classifications:",
+            entitySummary,
+            "",
+            "Charged relations (GoG trigger):",
+            chargedEdges,
+            "",
+            "Duties (first 14):",
+            dutiesSummary
+          ].join("\n")}</textarea>
+        </div>
+        <div>
+          <label>JSON Preview</label>
+          <textarea readonly class="mono" id="jsonPreview">${escapeHTML(safeJSON(state.data))}</textarea>
+        </div>
+      </div>
+    `;
+    wrap.appendChild(card);
+    body.appendChild(wrap);
+  }
+
+  // ---------- JSON Import ----------
+  function openJSONModal(){
+    $("#jsonInput").value = "";
+    $("#jsonLoadStatus").textContent = "";
+    $("#jsonModal").style.display = "flex";
+  }
+  function closeJSONModal(){
+    $("#jsonModal").style.display = "none";
+  }
+
+  function loadCaseFromJSON(raw){
+    let parsed;
+    try { parsed = JSON.parse(raw); }
+    catch { throw new Error("Invalid JSON syntax."); }
+
+    const requiredKeys = ["case","entities","relations","iat","duties","events","residue","repair_plans"];
+    for(const k of requiredKeys){
+      if(!(k in parsed)) throw new Error(`Missing required key: "${k}"`);
+    }
+
+    // Basic types sanity
+    if(!Array.isArray(parsed.entities)) throw new Error("entities must be an array.");
+    if(!Array.isArray(parsed.relations)) throw new Error("relations must be an array.");
+    if(!Array.isArray(parsed.duties)) throw new Error("duties must be an array.");
+
+    state.data = parsed;
+    state.ui.stepIndex = 0;
+
+    // Ensure BFO and IAT classifications
+    state.data.entities.forEach(e => {
+      if(!e.bfo_type) e.bfo_type = inferBFOType(e);
+      const rec = state.data.iat?.[e.id];
+      if(rec) rec.classification = computeIATClassification(rec);
+    });
+
+    // Ensure duty bearers routing if missing
+    state.data.duties.forEach(dd => {
+      if(!dd.bearers || dd.bearers.length === 0){
+        dd.bearers = getDutyBearers(dd.from);
+      }
+    });
+  }
+
+  // ---------- Global Buttons + Right panel tabs ----------
+  function wireGlobal(){
+    $("#btnPrev").addEventListener("click", () => {
+      state.ui.stepIndex = clamp(state.ui.stepIndex - 1, 0, steps.length - 1);
+      render();
+    });
+    $("#btnNext").addEventListener("click", () => {
+      state.ui.stepIndex = clamp(state.ui.stepIndex + 1, 0, steps.length - 1);
+      render();
+    });
+
+    $("#btnToggleRaw").addEventListener("click", () => {
+      state.ui.showRawTrace = !state.ui.showRawTrace;
+      renderTrace();
+      STATUS(state.ui.showRawTrace ? "Trace: Raw JSON" : "Trace: Summary");
+    });
+
+    $("#tabWarnings").addEventListener("click", () => {
+      state.ui.rightMode = "warnings";
+      $("#tabWarnings").classList.add("active");
+      $("#tabTrace").classList.remove("active");
+      $("#warningsPane").style.display = "";
+      $("#tracePane").style.display = "none";
+      renderDiagnostics();
+    });
+
+    $("#tabTrace").addEventListener("click", () => {
+      state.ui.rightMode = "trace";
+      $("#tabTrace").classList.add("active");
+      $("#tabWarnings").classList.remove("active");
+      $("#warningsPane").style.display = "none";
+      $("#tracePane").style.display = "";
+      renderTrace();
+    });
+
+    $("#btnCopyJSON").addEventListener("click", () => { copyToClipboard(safeJSON(state.data)); });
+
+    $("#btnDownloadJSON").addEventListener("click", () => {
+      const base = (state.data.case.title || "moral_reasoner_case")
+        .toLowerCase()
+        .replaceAll(/[^a-z0-9]+/g, "_")
+        .replaceAll(/^_+|_+$/g, "");
+      downloadText(`${base || "moral_reasoner"}_${state.data.case.id}.json`, safeJSON(state.data));
+    });
+
+    $("#btnReset").addEventListener("click", () => {
+      if(!confirm("Reset everything?")) return;
+      const created = nowISO();
+      state.data = {
+        case: { id: "case_001", title: "", domain: "moral", description: "", time_horizon: "single_event", created_at: created },
+        entities: [],
+        relations: [],
+        iat: {},
+        duties: [],
+        events: [],
+        residue: [],
+        repair_plans: []
+      };
+      state.ui.stepIndex = 0;
+      render();
+      STATUS("Reset complete");
+    });
+
+    $("#btnLoadSample").addEventListener("click", () => { loadSample(); render(); STATUS("Loaded sample scenario"); });
+
+    // JSON modal wiring
+    $("#btnLoadJSON").addEventListener("click", openJSONModal);
+    $("#btnCloseJSON").addEventListener("click", closeJSONModal);
+    $("#btnCancelJSON").addEventListener("click", closeJSONModal);
+
+    $("#btnConfirmJSON").addEventListener("click", () => {
+      const raw = $("#jsonInput").value.trim();
+      if(!raw){
+        $("#jsonLoadStatus").textContent = "No JSON provided.";
+        return;
+      }
+      try{
+        loadCaseFromJSON(raw);
+        closeJSONModal();
+        render();
+        STATUS("JSON case loaded");
+      }catch(err){
+        $("#jsonLoadStatus").textContent = err.message || String(err);
+      }
+    });
+
+    // Keyboard shortcuts
+    window.addEventListener("keydown", (e) => {
+      const isMac = navigator.platform.toLowerCase().includes("mac");
+      const ctrl = isMac ? e.metaKey : e.ctrlKey;
+
+      if(ctrl && e.key.toLowerCase() === "s"){
+        e.preventDefault();
+        $("#btnDownloadJSON").click();
+      }
+      if(ctrl && e.key.toLowerCase() === "k"){
+        e.preventDefault();
+        $("#btnCopyJSON").click();
+      }
+      if(ctrl && e.key.toLowerCase() === "o"){
+        e.preventDefault();
+        $("#btnLoadJSON").click();
+      }
+    });
+  }
+
+  // ---------- Sample ----------
+  function loadSample(){
+    const created = nowISO();
+    state.data.case = {
+      id: "case_sample_001",
+      title: "Moderation ban dispute",
+      domain: "platform",
+      description: "A user was banned by a platform after an automated system flagged content. The user claims unfair treatment and seeks repair.",
+      time_horizon: "ongoing",
+      created_at: created
+    };
+
+    const E1 = "E_platform";
+    const E2 = "E_user";
+    const E3 = "E_ai";
+
+    state.data.entities = [
+      { id: E1, label: "Platform", type: "institution", bfo_type: BFO.IC, notes: "Controls policies and appeals", governance: { controllers: [E1], can_reset: false } },
+      { id: E2, label: "User", type: "human", bfo_type: BFO.IC, notes: "Banned account", governance: { controllers: [E2], can_reset: false } },
+      { id: E3, label: "Moderation AI", type: "ai_system", bfo_type: BFO.IC, notes: "Classifier flags content", governance: { controllers: [E1], can_reset: true } }
+    ];
+
+    state.data.iat = {};
+    state.data.iat[E1] = {
+      standing: { pass: true, evidence: ["Users address claims to platform via appeals"] },
+      breach: { pass: true, evidence: ["Platform can violate policies and fairness commitments"] },
+      non_resettable_residue: { pass: true, evidence: ["Trust and liability persist across incidents"] },
+      repair_capacity: { pass: true, evidence: ["Can restore account, revise policy, compensate"] },
+      counterfactual_control: { pass: true, evidence: ["Could choose alternative moderation and appeals processes"] },
+      classification: "normative_agent",
+      residue_locus_notes: "Residue terminates at platform governance",
+      residue_locus_ids: [E1]
+    };
+
+    state.data.iat[E2] = {
+      standing: { pass: true, evidence: ["User is addressee of community norms"] },
+      breach: { pass: true, evidence: ["User can violate norms"] },
+      non_resettable_residue: { pass: true, evidence: ["Sanctions and reputation persist"] },
+      repair_capacity: { pass: true, evidence: ["Can apologize, comply, make amends"] },
+      counterfactual_control: { pass: true, evidence: ["Could have posted differently"] },
+      classification: "normative_agent",
+      residue_locus_notes: "",
+      residue_locus_ids: [E2]
+    };
+
+    state.data.iat[E3] = {
+      standing: { pass: true, evidence: ["People treat system outputs as normatively salient"] },
+      breach: { pass: true, evidence: ["System can cause wrongful flags under operational criteria"] },
+      non_resettable_residue: { pass: false, evidence: ["Reset and redeploy can erase local state"] },
+      repair_capacity: { pass: false, evidence: ["Repair obligations terminate at platform, not model"] },
+      counterfactual_control: { pass: false, evidence: ["No attributable option-space under present setup"] },
+      classification: "normative_instrument",
+      residue_locus_notes: "Residue terminates at platform operator",
+      residue_locus_ids: [E1]
+    };
+
+    state.data.relations = [
+      {
+        id: "R_platform_user",
+        from: E1,
+        to: E2,
+        directedness: { present: true, evidence: ["Ongoing service relationship and enforcement actions"] },
+        vulnerability: { present: true, dimensions: ["exclusion","standing_constraint"] },
+        role_context: ["platform_operator"]
+      },
+      {
+        id: "R_ai_user",
+        from: E3,
+        to: E2,
+        directedness: { present: true, evidence: ["AI flags user content"] },
+        vulnerability: { present: true, dimensions: ["exclusion","error_exposure"] },
+        role_context: ["instrument_in_governance"]
+      }
+    ];
+
+    state.data.duties = [];
+    inferDutiesFromRelations();
+
+    state.data.events = [
+      { id: "EV_ban", type: "breach", actor: E1, target: E2, linked_duty: "", notes: "Ban issued without meaningful appeal pathway." }
+    ];
+
+    state.data.residue = [
+      { id: "S_trust", entity: E1, relation: "R_platform_user", kind: "trust_loss", enduring: true, clearing_conditions: ["RP_appeal_fix"] }
+    ];
+
+    state.data.repair_plans = [
+      {
+        id: "RP_appeal_fix",
+        for_residue: "S_trust",
+        notes: "Restore standing and fix process",
+        steps: [
+          { action: "acknowledge", by: E1 },
+          { action: "restitution", by: E1 },
+          { action: "structural_change", by: E1 }
+        ]
+      }
+    ];
+
+    state.ui.stepIndex = 0;
+  }
+
+  // ---------- Render ----------
+  function render(){
+    // update iat classification
+    state.data.entities.forEach(e => {
+      if(!e.bfo_type) e.bfo_type = inferBFOType(e);
+      const rec = state.data.iat[e.id];
+      if(rec) rec.classification = computeIATClassification(rec);
+    });
+
+    // reroute bearers if missing
+    state.data.duties.forEach(dd => {
+      if(!dd.bearers || dd.bearers.length === 0){
+        dd.bearers = getDutyBearers(dd.from);
+      }
+    });
+
+    renderStepper();
+    renderCenter();
+
+    if(state.ui.rightMode === "warnings"){
+      $("#warningsPane").style.display = "";
+      $("#tracePane").style.display = "none";
+      renderDiagnostics();
+    }else{
+      $("#warningsPane").style.display = "none";
+      $("#tracePane").style.display = "";
+      renderTrace();
+    }
+  }
+
+  // Boot
+  wireGlobal();
+  render();
+})();
+</script>
+</body>
+</html>
