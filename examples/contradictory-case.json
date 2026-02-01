@@ -1,0 +1,110 @@
+{
+  "case": {
+    "id": "case_contradictory_ghosting",
+    "title": "Ghosting Without Repair",
+    "domain": "moral",
+    "description": "A charged interpersonal relation where communication is abruptly cut off without explanation.",
+    "time_horizon": "ongoing",
+    "created_at": "2026-02-01T19:00:00Z"
+  },
+  "entities": [
+    {
+      "id": "E_alice",
+      "label": "Alice",
+      "type": "human",
+      "bfo_type": "independent_continuant",
+      "notes": "Stops responding.",
+      "governance": {
+        "controllers": [
+          "E_alice"
+        ],
+        "can_reset": false
+      }
+    },
+    {
+      "id": "E_bob",
+      "label": "Bob",
+      "type": "human",
+      "bfo_type": "independent_continuant",
+      "notes": "Is ghosted.",
+      "governance": {
+        "controllers": [
+          "E_bob"
+        ],
+        "can_reset": false
+      }
+    }
+  ],
+  "iat": {
+    "E_alice": {
+      "standing": {
+        "pass": true,
+        "evidence": [
+          "Interpersonal addressee."
+        ]
+      },
+      "breach": {
+        "pass": true,
+        "evidence": [
+          "Can violate expectations of reply."
+        ]
+      },
+      "non_resettable_residue": {
+        "pass": true,
+        "evidence": [
+          "Loss of trust persists."
+        ]
+      },
+      "repair_capacity": {
+        "pass": true,
+        "evidence": [
+          "Could acknowledge or explain."
+        ]
+      },
+      "counterfactual_control": {
+        "pass": true,
+        "evidence": [
+          "Could have responded."
+        ]
+      },
+      "classification": "normative_agent",
+      "residue_locus_notes": "",
+      "residue_locus_ids": [
+        "E_alice"
+      ]
+    }
+  },
+  "relations": [
+    {
+      "id": "R_alice_bob",
+      "from": "E_alice",
+      "to": "E_bob",
+      "directedness": {
+        "present": true,
+        "evidence": [
+          "Ongoing communication."
+        ]
+      },
+      "vulnerability": {
+        "present": true,
+        "dimensions": [
+          "emotional_dependence"
+        ]
+      },
+      "role_context": []
+    }
+  ],
+  "duties": [],
+  "events": [
+    {
+      "id": "EV_ghosting",
+      "type": "breach",
+      "actor": "E_alice",
+      "target": "E_bob",
+      "linked_duty": "",
+      "notes": "Abrupt cessation of communication."
+    }
+  ],
+  "residue": [],
+  "repair_plans": []
+}

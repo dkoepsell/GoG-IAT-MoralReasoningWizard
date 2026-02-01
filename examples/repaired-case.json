@@ -1,0 +1,153 @@
+{
+  "case": {
+    "id": "case_repaired_ghosting",
+    "title": "Ghosting With Repair",
+    "domain": "moral",
+    "description": "A charged interpersonal relation where ghosting occurs but is followed by acknowledgment and repair.",
+    "time_horizon": "ongoing",
+    "created_at": "2026-02-01T19:10:00Z"
+  },
+  "entities": [
+    {
+      "id": "E_alice",
+      "label": "Alice",
+      "type": "human",
+      "bfo_type": "independent_continuant",
+      "notes": "Stops responding, then repairs.",
+      "governance": {
+        "controllers": [
+          "E_alice"
+        ],
+        "can_reset": false
+      }
+    },
+    {
+      "id": "E_bob",
+      "label": "Bob",
+      "type": "human",
+      "bfo_type": "independent_continuant",
+      "notes": "Is ghosted, then acknowledged.",
+      "governance": {
+        "controllers": [
+          "E_bob"
+        ],
+        "can_reset": false
+      }
+    }
+  ],
+  "iat": {
+    "E_alice": {
+      "standing": {
+        "pass": true,
+        "evidence": [
+          "Interpersonal addressee."
+        ]
+      },
+      "breach": {
+        "pass": true,
+        "evidence": [
+          "Can violate expectations of reply."
+        ]
+      },
+      "non_resettable_residue": {
+        "pass": true,
+        "evidence": [
+          "Trust loss persists until repair."
+        ]
+      },
+      "repair_capacity": {
+        "pass": true,
+        "evidence": [
+          "Acknowledges and explains."
+        ]
+      },
+      "counterfactual_control": {
+        "pass": true,
+        "evidence": [
+          "Could have responded earlier."
+        ]
+      },
+      "classification": "normative_agent",
+      "residue_locus_notes": "",
+      "residue_locus_ids": [
+        "E_alice"
+      ]
+    }
+  },
+  "relations": [
+    {
+      "id": "R_alice_bob",
+      "from": "E_alice",
+      "to": "E_bob",
+      "directedness": {
+        "present": true,
+        "evidence": [
+          "Ongoing communication."
+        ]
+      },
+      "vulnerability": {
+        "present": true,
+        "dimensions": [
+          "emotional_dependence"
+        ]
+      },
+      "role_context": []
+    }
+  ],
+  "duties": [
+    {
+      "id": "D_recognition",
+      "relation_id": "R_alice_bob",
+      "from": "E_alice",
+      "to": "E_bob",
+      "family": "recognition",
+      "description": "Provide acknowledgment rather than silence.",
+      "justification": [
+        "directedness+vulnerability"
+      ],
+      "status": "fulfilled",
+      "bearers": [
+        "E_alice"
+      ]
+    }
+  ],
+  "events": [
+    {
+      "id": "EV_ghosting",
+      "type": "breach",
+      "actor": "E_alice",
+      "target": "E_bob",
+      "linked_duty": "D_recognition",
+      "notes": "Initial cessation of communication."
+    }
+  ],
+  "residue": [
+    {
+      "id": "S_trust_loss",
+      "entity": "E_alice",
+      "relation": "R_alice_bob",
+      "kind": "trust_loss",
+      "enduring": true,
+      "clearing_conditions": [
+        "RP_acknowledgment"
+      ]
+    }
+  ],
+  "repair_plans": [
+    {
+      "id": "RP_acknowledgment",
+      "for_residue": "S_trust_loss",
+      "notes": "Acknowledge harm and explain absence.",
+      "steps": [
+        {
+          "action": "acknowledge",
+          "by": "E_alice"
+        },
+        {
+          "action": "explain",
+          "by": "E_alice"
+        }
+      ]
+    }
+  ]
+}
