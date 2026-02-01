@@ -1,4 +1,4 @@
-# GoG Moral Reasoner  
+# GoG Moral Reasoner
 *A structural diagnostic tool for moral agency, obligation, contradiction, and repair*
 
 ## Overview
@@ -94,10 +94,12 @@ It serves only as structural guardrails.
 ## Relationship to Other Projects
 
 ### The Geometry of the Good (GoG)
+
 This tool operationalizes the core ontology developed in *The Geometry of the Good* by making its claims testable and inspectable in concrete cases.
 
 ### SOoL (Structural Ontology of Law)
-GoG Moral Reasoner operates at the **pre-legal moral diagnostic layer**.  
+
+The GoG Moral Reasoner operates at the **pre-legal moral diagnostic layer**.  
 SOoL models how responsibility, roles, and contradictions are instantiated and repaired within legal systems.
 
 In short:
@@ -110,3 +112,60 @@ The two frameworks are complementary but not merged.
 
 ## Repository Contents
 
+```
+/moral-reasoner
+  moral-reasoner.html     # Single-file interactive tool
+  README.md               # This document
+  /examples
+    contradictory-case.json
+    repaired-case.json
+```
+
+The tool runs entirely in the browser. No build step. No backend.
+
+---
+
+## Usage
+
+1. Open `moral-reasoner.html` in a modern browser  
+2. Create a case or load one via JSON import  
+3. Define entities, relations, events, and repair paths  
+4. Inspect agency classifications, obligation routing, and diagnostics  
+
+JSON export/import is supported for teaching, analysis, and extension.
+
+---
+
+## Status and Scope
+
+This project is **experimental and exploratory**.
+
+- APIs are not stable
+- The UI may change
+- The purpose is diagnostic clarity, not completeness
+
+Contributions that improve clarity, extensibility, or pedagogical usefulness are welcome.  
+Normative verdicts are out of scope.
+
+---
+
+## License
+
+MIT License.  
+Free to use, adapt, and extend with attribution.
+
+---
+
+## Citation
+
+If you reference this tool in academic work, please cite:
+
+Koepsell, D. R. *The Geometry of the Good*. EthicsPress.  
+GoG Moral Reasoner (GitHub repository).
+
+---
+
+## Contact
+
+David R. Koepsell  
+https://davidkoepsell.com
