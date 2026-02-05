@@ -1,0 +1,147 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>IAT – Horizontal Canonical Explainer (Moral Example)</title>
+<style>
+body {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background: #0f1220;
+  color: #f2f2f2;
+  text-align: center;
+}
+h1 { margin-top: 30px; }
+#timeline {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 50px auto 30px;
+  max-width: 1100px;
+}
+.stage {
+  padding: 18px 22px;
+  margin: 0 10px;
+  border-radius: 14px;
+  background: #1e2240;
+  box-shadow: 0 0 0 2px #2f3470;
+  min-width: 160px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.stage:hover {
+  background: #2b3180;
+}
+.stage.active {
+  box-shadow: 0 0 20px 5px rgba(0,255,255,0.95);
+  background: #2b3180;
+}
+.arrow {
+  font-size: 2em;
+  opacity: 0.7;
+}
+#panel {
+  max-width: 900px;
+  margin: 20px auto;
+  padding: 24px;
+  background: #161a35;
+  border-radius: 14px;
+  text-align: left;
+  min-height: 170px;
+}
+.fail {
+  border-left: 6px solid #ff6b6b;
+}
+.ok {
+  border-left: 6px solid #4cffd7;
+}
+strong { color: #9ef; }
+</style>
+</head>
+<body>
+
+<h1>The Irreversible Accountability Test</h1>
+<p style="opacity:0.8">Horizontal canonical explainer using a moral (non-legal) example</p>
+
+<div id="timeline">
+  <div id="entity" class="stage" onclick="show('entity')">Entity</div>
+  <div class="arrow">→</div>
+  <div id="standing" class="stage" onclick="show('standing')">Claim / Standing</div>
+  <div class="arrow">→</div>
+  <div id="breach" class="stage" onclick="show('breach')">Breach</div>
+  <div class="arrow">→</div>
+  <div id="residue" class="stage" onclick="show('residue')">Normative Residue</div>
+  <div class="arrow">↺</div>
+  <div id="repair" class="stage" onclick="show('repair')">Repair</div>
+</div>
+
+<div id="panel" class="ok">
+Click a stage to see what it means and how it appears in ordinary moral life.
+</div>
+
+<div style="margin-top:20px">
+  <button onclick="failedAgency()">Show failed agency example</button>
+</div>
+
+<script>
+const panel = document.getElementById("panel");
+
+function clearActive(){
+  document.querySelectorAll(".stage").forEach(s => s.classList.remove("active"));
+  panel.className = "ok";
+}
+
+function activate(id){
+  document.getElementById(id).classList.add("active");
+}
+
+function show(stage){
+  clearActive();
+  activate(stage);
+
+  const content = {
+    entity: `
+      <strong>Entity</strong><br>
+      A persisting person who can be addressed across time.<br><br>
+      <em>Moral example:</em> Alex, a close friend in a shared social circle.
+    `,
+    standing: `
+      <strong>Claim / Standing</strong><br>
+      Standing exists when others can legitimately expect something of the entity.<br><br>
+      <em>Moral example:</em> Alex's friends can expect honesty and reliability from him.
+    `,
+    breach: `
+      <strong>Breach</strong><br>
+      A claim is violated in a way attributable to the entity.<br><br>
+      <em>Moral example:</em> Alex lies to cover up a mistake, betraying a friend’s trust.
+    `,
+    residue: `
+      <strong>Normative Residue</strong><br>
+      Breach leaves an enduring remainder that alters future relations.<br><br>
+      <em>Moral example:</em> Even after the lie is revealed, trust is damaged and does not automatically return.
+    `,
+    repair: `
+      <strong>Repair</strong><br>
+      Actions that respond to residue and reshape future standing without erasing the past.<br><br>
+      <em>Moral example:</em> Alex apologizes sincerely, tells the truth, and acts reliably over time to rebuild trust.
+    `
+  };
+
+  panel.innerHTML = content[stage];
+}
+
+function failedAgency(){
+  clearActive();
+  panel.className = "fail";
+  panel.innerHTML = `
+    <strong>Failed Agency (Moral Contrast)</strong><br>
+    A storm knocks out the power during a planned dinner, ruining the evening.<br><br>
+    No one attributes blame to the storm: there is no standing, no breach of a claim,
+    and no normative residue owed by the weather itself. The outcome is unfortunate,
+    but it is not a case of moral agency or accountability.
+  `;
+}
+</script>
+
+</body>
+</html>
